@@ -1,4 +1,2 @@
-// Barrel for sim-engine with ESM-ready specifiers
-// Explicit .js ensures Node ESM can resolve runtime files in dist/
+// ESM-ready barrel without duplicate type re-exports
 export * from './engine.js';
-export type * from './types.js';
