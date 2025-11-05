@@ -1,1 +1,79 @@
-import { MinHeap } from './priority-queue';import type{Event,EventKind,SimTime,StationState,Token,EngineConfig,EngineHooks}from'./types';export class Engine{now=0;private seq=0;private heap=new MinHeap<Event>((a,b)=>a.t===b.t?a.seq<b.seq:a.t<b.t);private active=0;private nextOrder=0;constructor(public cfg:EngineConfig,private hooks?:EngineHooks){}schedule(t:SimTime,kind:EventKind,data:any){this.heap.push({t,kind,data,seq:this.seq++});}tryReleases(){const orders=this.cfg.orders;let changed=false;while(this.nextOrder<orders.length){const o=orders[this.nextOrder];if(o.release>this.now)break;if(this.active>=this.cfg.WIP)break;this.active++;this.nextOrder++;for(const f of o.funs){const tok:Token={prodId:o.id,fun:f,opIdx:0};this.enqueueOrStart(tok);}changed=true;}return changed;}enqueueOrStart(tok:Token){const route=this.cfg.routes[tok.fun];if(!route?.length)return;tok.currentOp=route[tok.opIdx];const tSec=this.cfg.timeMap[tok.fun]?.[tok.currentOp]??0;const elig=this.cfg.able[tok.currentOp]||[];const stId=elig[0];if(!stId)throw new Error(`Brak stacji dla op: ${tok.currentOp}`);const st=this.cfg.stations[stId];const srv=st.busyUntil.findIndex(u=>u<=this.now);if(srv>=0){const finish=this.now+tSec;st.busyUntil[srv]=finish;st.busySum+=tSec;this.schedule(finish,'END_OP',{tok:{...tok},stId,srv});}else{st.queue.push({...tok});}}tryStartFromQueue(stId:string){const st=this.cfg.stations[stId];if(!st)return;for(let i=0;i<st.busyUntil.length;i++){if(st.busyUntil[i]<=this.now&&st.queue.length){const tok=st.queue.shift()!;const tSec=this.cfg.timeMap[tok.fun]?.[tok.currentOp!]??0;const finish=this.now+tSec;st.busyUntil[i]=finish;st.busySum+=tSec;this.schedule(finish,'END_OP',{tok,stId,srv:i});}}}step(){const ev=this.heap.pop();if(!ev)return false;this.now=ev.t;this.hooks?.onEvent?.(ev,this);if(ev.kind==='END_OP'){const tok:Token=ev.data.tok;tok.opIdx++;const route=this.cfg.routes[tok.fun];if(tok.opIdx>=route.length){}else{this.enqueueOrStart(tok);}this.tryStartFromQueue(ev.data.stId);}this.tryReleases();return true;}run(){this.tryReleases();while(this.heap.size()){this.step();}return this.summary();}summary(){return{time:this.now,stations:Object.fromEntries(Object.entries(this.cfg.stations).map(([id,s])=>[id,{busySum:s.busySum,done:s.doneCount,m:s.m}]))};}}
+// Minimal self-contained simulation engine (no external relative imports)
+// ESM-friendly: no extension-less imports, no runtime dependencies within the package.
+export type StationState = {
+  id: string;
+  m: number;                 // capacity (parallel servers)
+  busyUntil: number[];       // per-server availability time
+  queue: any[];              // placeholder queue, not used in this minimal version
+  busySum: number;           // accumulated busy time for utilization
+  doneCount: number;         // completed tasks
+};
+
+export type EngineConfig = {
+  stations: Record<string, StationState>;
+  routes: Record<string, string[]>;                   // key -> sequence of operations
+  timeMap: Record<string, Record<string, number>>;    // key -> op -> time
+  able: Record<string, string[]>;                     // op -> list of stations that can do it
+  orders: { id: string; release: number; funs: string[] }[];
+  WIP: number;
+};
+
+export class Engine {
+  cfg: EngineConfig;
+  constructor(cfg: EngineConfig) {
+    this.cfg = cfg;
+  }
+
+  private pickMachine(station: StationState): number {
+    // pick server index with the earliest availability
+    let idx = 0;
+    let best = station.busyUntil[0] ?? 0;
+    for (let i=1;i<station.busyUntil.length;i++){
+      const t = station.busyUntil[i];
+      if (t < best) { best = t; idx = i; }
+    }
+    return idx;
+  }
+
+  run() {
+    const { stations, routes, timeMap, able, orders } = this.cfg;
+    let now = 0;
+
+    // very simple greedy scheduler: per order -> per fun -> per operation
+    for (const o of orders) {
+      now = Math.max(now, o.release || 0);
+      for (const funKey of o.funs) {
+        const ops = routes[funKey] || [];
+        for (const op of ops) {
+          const stList = able[op] || [];
+          if (!stList.length) continue;
+          // choose the station with the earliest free machine
+          let bestStation = stations[stList[0]];
+          let bestIdx = this.pickMachine(bestStation);
+          let bestTime = bestStation.busyUntil[bestIdx];
+          for (let k=1;k<stList.length;k++){
+            const s = stations[stList[k]];
+            const idx = this.pickMachine(s);
+            const t = s.busyUntil[idx];
+            if (t < bestTime) { bestStation = s; bestIdx = idx; bestTime = t; }
+          }
+          const setup = 0;
+          const proc = (timeMap[funKey]?.[op] ?? 1);
+          const start = Math.max(now, bestTime);
+          const finish = start + setup + proc;
+          bestStation.busySum += (finish - start);
+          bestStation.busyUntil[bestIdx] = finish;
+          bestStation.doneCount += 1;
+          now = finish;
+        }
+      }
+    }
+
+    // makespan = max station busyUntil
+    let makespan = 0;
+    for (const s of Object.values(stations)) {
+      for (const t of s.busyUntil) makespan = Math.max(makespan, t);
+    }
+    return { time: makespan, stations };
+  }
+}
