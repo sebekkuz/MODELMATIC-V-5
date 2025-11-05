@@ -2,20 +2,19 @@ services:
   - type: web
     name: prodsim-backend
     runtime: node
-    plan: free
+    plan: starter
     autoDeployTrigger: commit
     healthCheckPath: /health
     buildCommand: |
       corepack enable
       corepack prepare pnpm@9.12.0 --activate
-      pnpm i --frozen-lockfile
-      pnpm --filter @prodsim/backend build
+      pnpm install --no-frozen-lockfile
+      pnpm -r build
     startCommand: node apps/backend/dist/server.js
     envVars:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        # Uzupełnij po pierwszym deployu URL-em frontendu, np. https://prodsim-frontend.onrender.com
         value: https://<frontend-domain>.onrender.com
 
   - type: web
@@ -25,7 +24,7 @@ services:
     buildCommand: |
       corepack enable
       corepack prepare pnpm@9.12.0 --activate
-      pnpm i --frozen-lockfile
+      pnpm install --no-frozen-lockfile
       pnpm --filter @prodsim/frontend build
     staticPublishPath: apps/frontend/dist
     envVars:
