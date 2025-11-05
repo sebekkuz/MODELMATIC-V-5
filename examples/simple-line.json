@@ -1,0 +1,151 @@
+{
+  "version": "1.0",
+  "layout": {
+    "grid": {
+      "cols": 6,
+      "rows": 2
+    },
+    "stations": [
+      {
+        "id": "gen",
+        "name": "Generator",
+        "pos": {
+          "x": 0,
+          "y": 0
+        },
+        "capacity": 1,
+        "families": [
+          "A"
+        ],
+        "opTypes": [],
+        "operations": [
+          "Release"
+        ],
+        "bufferMode": "info",
+        "buffers": {}
+      },
+      {
+        "id": "q1",
+        "name": "Kolejka",
+        "pos": {
+          "x": 2,
+          "y": 0
+        },
+        "capacity": 4,
+        "families": [
+          "A"
+        ],
+        "opTypes": [],
+        "operations": [
+          "Queue"
+        ],
+        "bufferMode": "hard",
+        "buffers": {}
+      },
+      {
+        "id": "srv",
+        "name": "Serwer",
+        "pos": {
+          "x": 4,
+          "y": 0
+        },
+        "capacity": 1,
+        "families": [
+          "A"
+        ],
+        "opTypes": [
+          "M"
+        ],
+        "operations": [
+          "Proc"
+        ],
+        "bufferMode": "info",
+        "buffers": {}
+      },
+      {
+        "id": "snk",
+        "name": "Sink",
+        "pos": {
+          "x": 5,
+          "y": 0
+        },
+        "capacity": 1,
+        "families": [
+          "A"
+        ],
+        "opTypes": [],
+        "operations": [
+          "Collect"
+        ],
+        "bufferMode": "info",
+        "buffers": {}
+      }
+    ],
+    "connections": [
+      {
+        "id": "f1",
+        "from": "gen",
+        "to": "q1",
+        "name": "flow",
+        "travel_s": 0,
+        "distance_m": 2
+      },
+      {
+        "id": "f2",
+        "from": "q1",
+        "to": "srv",
+        "name": "flow",
+        "travel_s": 1,
+        "distance_m": 5
+      },
+      {
+        "id": "f3",
+        "from": "srv",
+        "to": "snk",
+        "name": "flow",
+        "travel_s": 0,
+        "distance_m": 2
+      }
+    ]
+  },
+  "routes": [
+    {
+      "family": "A",
+      "kind": "FUNCTION",
+      "key": "X",
+      "steps": [
+        "Release",
+        "Queue",
+        "Proc",
+        "Collect"
+      ]
+    }
+  ],
+  "scenario": {
+    "family": "A",
+    "selected": [
+      "X"
+    ],
+    "dedupMap": {},
+    "orders": [
+      {
+        "id": "o1",
+        "dateISO": "2025-01-01",
+        "size": "21",
+        "sections": "X",
+        "chosen": [
+          "X"
+        ]
+      },
+      {
+        "id": "o2",
+        "dateISO": "2025-01-01",
+        "size": "21",
+        "sections": "X",
+        "chosen": [
+          "X"
+        ]
+      }
+    ]
+  }
+}

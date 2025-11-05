@@ -1,0 +1,29 @@
+{
+  "name": "@prodsim/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "^4.5.2",
+    "zod": "^3.23.8",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^9.99.0",
+    "three": "^0.164.1",
+    "papaparse": "^5.4.1",
+    "chart.js": "^4.4.6",
+    "react-chartjs-2": "^5.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8",
+    "@types/react": "^18.3.7",
+    "@types/react-dom": "^18.3.0"
+  }
+}

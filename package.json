@@ -1,0 +1,16 @@
+{
+  "name": "prodsim-hmlv",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:fe": "pnpm --filter @prodsim/frontend dev",
+    "dev:be": "pnpm --filter @prodsim/backend dev",
+    "dev": "node -e \"console.log('Run BE & FE separately: pnpm dev:be | pnpm dev:fe')\""
+  }
+}
