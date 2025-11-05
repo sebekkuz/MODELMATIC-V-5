@@ -12,7 +12,7 @@ await app.register(websocket);
 
 app.get('/health', async () => ({ ok: true }));
 
-app.get('/ws', { websocket: true }, (conn: any, req: any) => {
+app.get('/ws', { websocket: true }, (conn: any) => {
   const socket = conn.socket as WebSocket;
   socket.send(JSON.stringify({ type: 'HELLO_OK', server: 'backend', version: '1.0' }));
   socket.on('message', (buf: Buffer) => {
@@ -20,7 +20,6 @@ app.get('/ws', { websocket: true }, (conn: any, req: any) => {
       const msg = JSON.parse(String(buf));
       if (msg.type === 'RUN') {
         const project = msg.project as Project;
-        // Minimalny engine bez mapowania CSV (placeholder)
         const engine = new Engine({
           WIP: 1e6,
           routes: Object.fromEntries(project.routes.map(r => [r.key, r.steps])),
@@ -34,10 +33,10 @@ app.get('/ws', { websocket: true }, (conn: any, req: any) => {
           stations: Object.fromEntries(project.layout.stations.map(st => [st.id, {
             id: st.id, m: st.capacity, busyUntil: Array(st.capacity).fill(0), queue: [], busySum: 0, doneCount: 0
           }])),
-          orders: (project.scenario?.orders || []).map((o, idx) => ({ id: o.id, release: 0, funs: o.chosen }))
+          orders: (project.scenario?.orders || []).map(o => ({ id: o.id, release: 0, funs: o.chosen }))
         } as any);
         const res = engine.run();
-        const util = Object.fromEntries(Object.entries(res.stations as any).map(([id, s]: any) => [id, s.busySum]));
+        const util = Object.fromEntries(Object.entries((res as any).stations).map(([id, s]: any) => [id, s.busySum]));
         socket.send(JSON.stringify({ type: 'RESULTS', makespan: (res as any).time||0, th: 0, ltAvg: 0, ltP90: 0, util }));
       }
     } catch (e: any) {
