@@ -3,9 +3,13 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import { WebSocket } from 'ws';
 import { Engine } from '@prodsim/sim-engine';
-import type { Project } from '@prodsim/schemas';
+import { Project as ProjectSchema, type Project } from '@prodsim/schemas';
 
 const app = Fastify({ logger: true });
+
+// TODO: Operation times are currently hardcoded. This should be derived from
+// Project.operations or a separate time configuration, not hardcoded to 1 second.
+const DEFAULT_OPERATION_TIME_S = 1;
 
 await app.register(cors, { origin: process.env.CORS_ORIGIN || true });
 await app.register(websocket);
@@ -19,11 +23,16 @@ app.get('/ws', { websocket: true }, (conn: any) => {
     try {
       const msg = JSON.parse(String(buf));
       if (msg.type === 'RUN') {
-        const project = msg.project as Project;
+        const parseResult = ProjectSchema.safeParse(msg.project);
+        if (!parseResult.success) {
+          socket.send(JSON.stringify({ type: 'ERROR', message: `Invalid project data: ${parseResult.error.message}` }));
+          return;
+        }
+        const project = parseResult.data;
         const engine = new Engine({
           WIP: 1e6,
           routes: Object.fromEntries(project.routes.map(r => [r.key, r.steps])),
-          timeMap: Object.fromEntries(project.routes.map(r => [r.key, Object.fromEntries(r.steps.map(s=>[s,1]))])),
+          timeMap: Object.fromEntries(project.routes.map(r => [r.key, Object.fromEntries(r.steps.map(s=>[s,DEFAULT_OPERATION_TIME_S]))])),
           able: Object.fromEntries(
             Array.from(new Set(project.routes.flatMap(r=>r.steps))).map(op => [
               op,
