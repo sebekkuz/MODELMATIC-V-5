@@ -1,26 +1,9 @@
-services:
-  - type: web
-    name: prodsim-backend
-    runtime: node
+staticSites:
+  - name: prodsim-frontend
     branch: main
-    rootDir: .
-    autoDeployTrigger: commit
-    healthCheckPath: /health
-    buildCommand: bash .render/build.sh
-    startCommand: node apps/backend/dist/server.js
-
-  - type: web
-    name: prodsim-frontend
-    runtime: static
-    branch: main
-    rootDir: .
-    autoDeployTrigger: commit
-    buildCommand: |
-      corepack enable
-      corepack prepare pnpm@9.12.0 --activate
-      pnpm install --no-frozen-lockfile
-      pnpm --filter @prodsim/frontend build
-    staticPublishPath: apps/frontend/dist
+    rootDir: apps/frontend
+    buildCommand: npm ci --no-audit --no-fund && npm run build
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /.*
