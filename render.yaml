@@ -1,9 +1,32 @@
-staticSites:
-  - name: prodsim-frontend
+services:
+  - type: web
+    name: prodsim-backend
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: bash .render/build.sh
+    startCommand: node apps/backend/dist/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ORIGIN
+        value: https://<frontend-domain>.onrender.com
+
+  - type: static_site
+    name: prodsim-frontend
+    plan: free
+    region: oregon
     branch: main
     rootDir: apps/frontend
     buildCommand: npm ci --no-audit --no-fund && npm run build
     staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_HTTP
+        value: https://<backend-domain>.onrender.com
+      - key: VITE_API_WS
+        value: wss://<backend-domain>.onrender.com/ws
     routes:
       - type: rewrite
         source: /.*
