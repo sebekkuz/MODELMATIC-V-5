@@ -12,18 +12,15 @@ services:
       pnpm --filter @prodsim/backend build
     startCommand: node apps/backend/dist/server.js
     envVars:
-      - key: NODE_VERSION
-        value: 20.12.2
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        # Dla testów możesz ustawić '*' (niezalecane produkcyjnie), a po deployu wstaw URL frontendu.
+        # Uzupełnij po pierwszym deployu URL-em frontendu, np. https://prodsim-frontend.onrender.com
         value: https://<frontend-domain>.onrender.com
 
   - type: web
     name: prodsim-frontend
     runtime: static
-    plan: free
     autoDeployTrigger: commit
     buildCommand: |
       corepack enable
@@ -36,10 +33,6 @@ services:
         value: https://<backend-domain>.onrender.com
       - key: VITE_API_WS
         value: wss://<backend-domain>.onrender.com/ws
-    headers:
-      - path: /assets/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
     routes:
       - type: rewrite
         source: /.*
