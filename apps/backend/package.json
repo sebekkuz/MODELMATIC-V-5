@@ -1,12 +1,11 @@
 {
   "name": "@prodsim/backend",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "node -e \"console.log('Start dev server with tsx if installed')\""
+    "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "fastify": "^4.27.2",

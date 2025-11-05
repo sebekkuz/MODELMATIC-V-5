@@ -14,8 +14,6 @@ services:
       pnpm -r build
     startCommand: node apps/backend/dist/server.js
     envVars:
-      - key: NODE_VERSION
-        value: 20.12.2
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
