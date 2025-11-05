@@ -3,6 +3,8 @@ services:
     name: prodsim-backend
     runtime: node
     plan: starter
+    branch: main
+    rootDir: .
     autoDeployTrigger: commit
     healthCheckPath: /health
     buildCommand: |
@@ -12,6 +14,8 @@ services:
       pnpm -r build
     startCommand: node apps/backend/dist/server.js
     envVars:
+      - key: NODE_VERSION
+        value: 20.12.2
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
@@ -20,6 +24,8 @@ services:
   - type: web
     name: prodsim-frontend
     runtime: static
+    branch: main
+    rootDir: .
     autoDeployTrigger: commit
     buildCommand: |
       corepack enable
