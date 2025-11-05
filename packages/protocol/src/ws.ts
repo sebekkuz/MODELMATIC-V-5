@@ -1,1 +1,28 @@
-import type { Project } from '@prodsim/schemas';export type ClientMsg={type:'HELLO',client:'frontend',version:string}|{type:'RUN',project:Project,live?:boolean}|{type:'PAUSE'}|{type:'RESUME'}|{type:'STOP'}|{type:'PATCH_CONFIG',patch:Partial<Project>};export type ServerMsg={type:'HELLO_OK',server:'backend',version:string}|{type:'LIVE_TICK',t:number,kpi:{th:number,takt:number,bottleneck?:string},util:Record<string,number>}|{type:'EVENT_LOG',items:Array<{t:number,kind:string,note:string}>}|{type:'RESULTS',makespan:number,th:number,ltAvg:number,ltP90:number,util:Record<string,number>,csvUrl?:string}|{type:'ERROR',message:string,hints?:string[]};
+// WebSocket message protocol — type-safe
+import type { Project } from '@prodsim/schemas';
+
+export type ClientMsg =
+  | { type: 'RUN'; project: Project };
+
+export type ServerMsg =
+  | { type: 'HELLO_OK'; server: string; version: string }
+  | { type: 'RESULTS'; makespan: number; th: number; ltAvg: number; ltP90: number; util: Record<string, number> }
+  | { type: 'ERROR'; message: string };
+
+export type AnyMsg = ClientMsg | ServerMsg;
+
+export function isClientMsg(m: AnyMsg): m is ClientMsg {
+  return (m as ClientMsg).type === 'RUN';
+}
+
+export function isServerMsg(m: AnyMsg): m is ServerMsg {
+  return (m as ServerMsg).type !== 'RUN';
+}
+
+export function parseMsg(json: string): AnyMsg {
+  return JSON.parse(json) as AnyMsg;
+}
+
+export function stringifyMsg(m: AnyMsg): string {
+  return JSON.stringify(m);
+}
