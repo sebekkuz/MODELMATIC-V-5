@@ -1,10 +1,10 @@
 services:
   - type: web
     name: prodsim-backend
-    env: node
+    runtime: node
     plan: starter
     region: frankfurt
-    autoDeploy: true
+    autoDeployTrigger: commit
     healthCheckPath: /health
     buildCommand: |
       corepack enable
@@ -15,18 +15,16 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.12.2
-      - key: PORT
-        value: 3000
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        # Zmień na finalny URL frontendu po pierwszym deployu (np. https://prodsim-frontend.onrender.com)
+        # Zmien na finalny URL frontendu po pierwszym deployu (np. https://prodsim-frontend.onrender.com)
         value: https://<frontend-domain>.onrender.com
 
-staticSites:
-  - name: prodsim-frontend
-    plan: starter
-    region: frankfurt
+  - type: web
+    name: prodsim-frontend
+    runtime: static
+    autoDeployTrigger: commit
     buildCommand: |
       corepack enable
       corepack prepare pnpm@9.12.0 --activate
@@ -35,10 +33,10 @@ staticSites:
     staticPublishPath: apps/frontend/dist
     envVars:
       - key: VITE_API_HTTP
-        # Zmień na finalny URL backendu po pierwszym deployu (np. https://prodsim-backend.onrender.com)
+        # Zmien na finalny URL backendu po pierwszym deployu (np. https://prodsim-backend.onrender.com)
         value: https://<backend-domain>.onrender.com
       - key: VITE_API_WS
-        # Ścieżka WS do backendu (np. wss://prodsim-backend.onrender.com/ws)
+        # Sciezka WS do backendu (np. wss://prodsim-backend.onrender.com/ws)
         value: wss://<backend-domain>.onrender.com/ws
     headers:
       - path: /assets/*
