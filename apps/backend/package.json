@@ -1,6 +1,6 @@
 {
   "name": "@prodsim/backend",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "main": "dist/server.js",
@@ -15,10 +15,8 @@
     "ws": "^8.18.0",
     "zod": "^3.23.8",
     "@prodsim/sim-engine": "workspace:*",
-    "@prodsim/schemas": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "^5.6.3",
-    "@types/node": "^22.7.5"
+    "@prodsim/schemas": "workspace:*",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
   }
 }
