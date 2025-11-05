@@ -16,7 +16,11 @@ export function isClientMsg(m: AnyMsg): m is ClientMsg {
 }
 
 export function isServerMsg(m: AnyMsg): m is ServerMsg {
-  return (m as ServerMsg).type !== 'RUN';
+  if (!m || typeof m !== 'object') {
+    return false;
+  }
+  const type = (m as ServerMsg).type;
+  return type === 'HELLO_OK' || type === 'RESULTS' || type === 'ERROR';
 }
 
 export function parseMsg(json: string): AnyMsg {
