@@ -1,0 +1,1 @@
+bash .render/build.sh
