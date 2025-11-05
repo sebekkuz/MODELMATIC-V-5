@@ -3,7 +3,7 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import { WebSocket } from 'ws';
 import { Engine } from '@prodsim/sim-engine';
-import type { Project } from '@prodsim/schemas';
+import { Project } from '@prodsim/schemas';
 
 const app = Fastify({ logger: true });
 
@@ -19,7 +19,14 @@ app.get('/ws', { websocket: true }, (conn: any) => {
     try {
       const msg = JSON.parse(String(buf));
       if (msg.type === 'RUN') {
-        const project = msg.project as Project;
+        if (!msg.project || typeof msg.project !== 'object') {
+          throw new Error('Invalid project data: missing or malformed project');
+        }
+        const validationResult = Project.safeParse(msg.project);
+        if (!validationResult.success) {
+          throw new Error(`Invalid project schema: ${validationResult.error.message}`);
+        }
+        const project = validationResult.data;
         const engine = new Engine({
           WIP: 1e6,
           routes: Object.fromEntries(project.routes.map(r => [r.key, r.steps])),
