@@ -1,8 +1,10 @@
-// WebSocket message protocol — type-safe
-import type { Project } from '@prodsim/schemas';
+// WebSocket message protocol — zod-inferred Project type
+import { Project as ProjectSchema } from '@prodsim/schemas';
+import type { z } from 'zod';
 
-export type ClientMsg =
-  | { type: 'RUN'; project: Project };
+export type Project = z.infer<typeof ProjectSchema>;
+
+export type ClientMsg = { type: 'RUN'; project: Project };
 
 export type ServerMsg =
   | { type: 'HELLO_OK'; server: string; version: string }
@@ -12,11 +14,11 @@ export type ServerMsg =
 export type AnyMsg = ClientMsg | ServerMsg;
 
 export function isClientMsg(m: AnyMsg): m is ClientMsg {
-  return (m as ClientMsg).type === 'RUN';
+  return (m as any).type === 'RUN';
 }
 
 export function isServerMsg(m: AnyMsg): m is ServerMsg {
-  return (m as ServerMsg).type !== 'RUN';
+  return !isClientMsg(m);
 }
 
 export function parseMsg(json: string): AnyMsg {
