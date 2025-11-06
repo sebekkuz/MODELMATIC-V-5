@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "postinstall": "npm --prefix ../../packages/schemas install --no-audit --no-fund && npm --prefix ../../packages/schemas run build && npm --prefix ../../packages/protocol install --no-audit --no-fund && npm --prefix ../../packages/protocol run build"
+    "postinstall": "npm --prefix ../../packages/schemas install --no-audit --no-fund && npm --prefix ../../packages/schemas run build && npm --prefix ../../packages/protocol install --no-audit --no-fund && npm --prefix ../../packages/protocol run build",
+    "preinstall": "node .render-helpers/patch-workspace.js"
   },
   "dependencies": {
     "react": "^18.3.1",
